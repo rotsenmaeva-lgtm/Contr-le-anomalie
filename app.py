@@ -15,9 +15,9 @@ balance.columns = [col.strip() for col in balance.columns]
 balance.columns = [col.replace("\ufeff", "") for col in balance.columns]
     
     # Nettoyage
-    balance = balance.dropna(subset=["N° facture", "Crédit"], how="all")
-    balance = balance[balance["Crédit"] != 0]
-    balance = balance[balance["N° facture"].astype(str).str.strip() != ""]
+balance = balance.dropna(subset=["N° facture", "Crédit"], how="all")
+balance = balance[balance["Crédit"] != 0]
+balance = balance[balance["N° facture"].astype(str).str.strip() != ""]
 
     anomalies = []
 
