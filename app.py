@@ -9,9 +9,9 @@ uploaded_file = st.file_uploader("Export_Balance_UTF8 (CSV)", type="csv")
 
 if uploaded_file:
    try:
-       balance = pd.read_csv(uploaded_file, sep=";", encoding="latin-1")
+      balance = pd.read_csv(uploaded_file, sep=";", encoding="latin-1")
 except:
-       balance = pd.read_csv(uploaded_file, sep=",", encoding="utf-8")
+      balance = pd.read_csv(uploaded_file, sep=",", encoding="utf-8")
     
     # Nettoyage
     balance = balance.dropna(subset=["N° facture", "Crédit"], how="all")
