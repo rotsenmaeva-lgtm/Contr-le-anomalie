@@ -8,7 +8,7 @@ st.title("🔍 Contrôle des anomalies fournisseurs")
 uploaded_file = st.file_uploader("Export_Balance_UTF8 (CSV)", type="csv")
 
 if uploaded_file:
-balance = pd.read_csv(uploaded_file, encoding="latin-1", sep=";")
+    balance = pd.read_csv(uploaded_file, encoding="latin-1", sep=";")
     
     # Nettoyage
     balance = balance.dropna(subset=["N° facture", "Crédit"], how="all")
