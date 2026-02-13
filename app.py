@@ -9,6 +9,10 @@ uploaded_file = st.file_uploader("Export_Balance_UTF8 (CSV)", type="csv")
 
 if uploaded_file:
     balance = pd.read_csv(uploaded_file, encoding="latin-1", sep=";")
+
+    # Nettoyage noms de colonnes
+balance.columns = [col.strip() for col in balance.columns]
+balance.columns = [col.replace("\ufeff", "") for col in balance.columns]
     
     # Nettoyage
     balance = balance.dropna(subset=["N° facture", "Crédit"], how="all")
