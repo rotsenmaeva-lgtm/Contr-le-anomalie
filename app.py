@@ -5,11 +5,14 @@ st.set_page_config(page_title="Contrôle Anomalies", layout="wide")
 
 st.title("🔍 Contrôle des anomalies fournisseurs")
 
-uploaded_file = st.file_uploader("Importer la balance fournisseurs (CSV)", type="csv")
+uploaded_file = st.file_uploader("Export_Balance_UTF8 (CSV)", type="csv")
 
 if uploaded_file:
-    balance = pd.read_csv(uploaded_file)
-
+   try:
+    balance = pd.read_csv(uploaded_file, sep=";", encoding="latin-1")
+except:
+    balance = pd.read_csv(uploaded_file, sep=",", encoding="utf-8")
+    
     # Nettoyage
     balance = balance.dropna(subset=["N° facture", "Crédit"], how="all")
     balance = balance[balance["Crédit"] != 0]
