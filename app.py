@@ -5,74 +5,77 @@ st.set_page_config(page_title="Contrôle Anomalies", layout="wide")
 
 st.title("🔍 Contrôle des anomalies fournisseurs")
 
-uploaded_file = st.file_uploader("Export_Balance_UTF8 (CSV)", type="csv")
+uploaded_file = st.file_uploader("Importer Export_Balance (CSV)", type="csv")
 
 if uploaded_file:
-  balance = pd.read_csv(uploaded_file, encoding="UTF-16",sep=",")
 
-   # Remplacer les valeurs NaN dans les colonnes "Débit" et "Crédit" par 0
-  balance["Débit"] = balance["Débit"].fillna(0)
-  balance["Crédit"] = balance["Crédit"].fillna(0)
+    # Lecture CSV avec fallback sur encodage et séparateur
+    try:
+        balance = pd.read_csv(uploaded_file, sep=";", encoding="utf-8")
+    except:
+        balance = pd.read_csv(uploaded_file, sep=",", encoding="utf-16")
 
-   # Convert 'Débit' and 'Crédit' columns to string type before applying string methods
-df["Débit"] = df["Débit"].astype(str).str.replace(" ", "").str.replace(",", ".").astype(float)
-df["Crédit"] = df["Crédit"].astype(str).str.replace(" ", "").str.replace(",", ".").astype(float)
-# Instead of converting to float, keep "N° facture" as string
-df["N° facture"] = df["N° facture"].astype(str).str.replace(" ", "").str.replace(",", ".")
-#The line above cleans the 'N° facture' column but keeps it as a string, preventing the ValueError.
+    # Normalisation noms de colonnes
+    balance.columns = [str(col).strip() for col in balance.columns]
+    balance.columns = [col.replace("\ufeff", "") for col in balance.columns]
 
-  balance["N° facture"] = balance["N° facture"].astype(str)
+    st.write("Colonnes détectées :", balance.columns.tolist())
 
-    # Remplacer les valeurs NaN dans les colonnes "Débit" et "Crédit" par 0
-  balance["Débit"] = balance["Débit"].fillna(0)
-  balance["Crédit"] = balance["Crédit"].fillna(0)
-  balance["N° facture"] = balance["N° facture"].fillna("")
+    # Remplir NaN
+    for col in ["Débit", "Crédit"]:
+        if col in balance.columns:
+            balance[col] = balance[col].fillna(0)
+            balance[col] = balance[col].astype(str).str.replace(" ", "").str.replace(",", ".").astype(float)
+    # Nettoyage N° facture
+    if "N° facture" in balance.columns:
+        balance["N° facture"] = balance["N° facture"].fillna("").astype(str).str.strip()
 
-    # Nettoyage noms de colonnes
-balance.columns = [col.strip() for col in balance.columns]
-balance.columns = [col.replace("\ufeff", "") for col in balance.columns]
-    
-    # Nettoyage
-balance = balance.dropna(subset=["N° facture", "Crédit"], how="all")
-balance = balance[balance["Crédit"] != 0]
-balance = balance[balance["N° facture"].astype(str).str.strip() != ""]
+    # Nettoyage données
+    if "N° facture" in balance.columns and "Crédit" in balance.columns:
+        balance = balance.dropna(subset=["N° facture", "Crédit"], how="all")
+        balance = balance[balance["Crédit"] != 0]
+        balance = balance[balance["N° facture"].astype(str).str.strip() != ""]
+    else:
+        st.error("⚠️ Colonnes 'N° facture' ou 'Crédit' manquantes !")
+        st.stop()
 
-anomalies = []
-def append_anomaly(anomaly_df, type_anomalie, commentaire):
+    # Détection anomalies
+    anomalies = []
+    def append_anomaly(anomaly_df, type_anomalie, commentaire):
         for _, row in anomaly_df.iterrows():
             anomalies.append({
                 "Type d'anomalie": type_anomalie,
-                "Compte": row["Compte"],
-                "N° facture": row["N° facture"],
-                "Date": row["Date"],
-                "Montant": row["Crédit"],
+                "Compte": row.get("Compte", ""),
+                "N° facture": row.get("N° facture", ""),
+                "Date": row.get("Date", ""),
+                "Montant": row.get("Crédit", 0),
                 "Commentaire": commentaire
             })
 
     # Doublons facture
-doublons_facture = balance[balance.duplicated(subset=["Compte", "N° facture"], keep=False)]
-
-if not doublons_facture.empty:
+    doublons_facture = balance[balance.duplicated(subset=["Compte", "N° facture"], keep=False)]
+    if not doublons_facture.empty:
         append_anomaly(doublons_facture, "Doublon de facture", "Facture en double")
 
-df_anomalies = pd.DataFrame(anomalies)
-
-total_pieces = len(balance)
-total_anomalies = len(df_anomalies)
-taux_anomalie = round((total_anomalies / total_pieces) * 100, 2) if total_pieces > 0 else 0
+    # DataFrame anomalies
+    df_anomalies = pd.DataFrame(anomalies)
 
     # KPIs
-col1, col2, col3 = st.columns(3)
-col1.metric("📄 Pièces analysées", total_pieces)
-col2.metric("⚠️ Anomalies détectées", total_anomalies)
-col3.metric("📊 Taux d'anomalie", f"{taux_anomalie} %")
+    total_pieces = len(balance)
+    total_anomalies = len(df_anomalies)
+    taux_anomalie = round((total_anomalies / total_pieces) * 100, 2) if total_pieces > 0 else 0
 
-st.subheader("📋 Liste des anomalies")
-st.dataframe(df_anomalies)
+    col1, col2, col3 = st.columns(3)
+    col1.metric("📄 Pièces analysées", total_pieces)
+    col2.metric("⚠️ Anomalies détectées", total_anomalies)
+    col3.metric("📊 Taux d'anomalie", f"{taux_anomalie} %")
 
-st.download_button(
-    "📥 Télécharger les anomalies",
-    df_anomalies.to_csv(index=False).encode("utf-8"),
-    "anomalies_structurées.csv",
-    "text/csv"
+    st.subheader("📋 Liste des anomalies")
+    st.dataframe(df_anomalies)
+
+    st.download_button(
+        "📥 Télécharger les anomalies",
+        df_anomalies.to_csv(index=False).encode("utf-8"),
+        "anomalies_structurées.csv",
+        "text/csv"
     )
