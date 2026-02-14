@@ -9,7 +9,6 @@ uploaded_file = st.file_uploader("Export_Balance_UTF8 (CSV)", type="csv")
 
 if uploaded_file:
     balance = pd.read_csv(uploaded_file, encoding="UTF-16",sep=",")
-balance = pd.read_csv("Export_Balance_UTF8.csv",encoding="UTF-16",sep=",")
 
    # Remplacer les valeurs NaN dans les colonnes "Débit" et "Crédit" par 0
 balance["Débit"] = balance["Débit"].fillna(0)
