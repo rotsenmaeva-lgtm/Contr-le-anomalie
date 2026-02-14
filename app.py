@@ -11,11 +11,11 @@ if uploaded_file:
     balance = pd.read_csv(uploaded_file, encoding="UTF-16",sep=",")
 balance = pd.read_csv("Export_Balance_UTF8.csv",encoding="UTF-16",sep=",")
 
-# Remplacer les valeurs NaN dans les colonnes "Débit" et "Crédit" par 0
+   # Remplacer les valeurs NaN dans les colonnes "Débit" et "Crédit" par 0
 balance["Débit"] = balance["Débit"].fillna(0)
 balance["Crédit"] = balance["Crédit"].fillna(0)
 
-# Convert 'Débit' and 'Crédit' columns to string type before applying string methods
+   # Convert 'Débit' and 'Crédit' columns to string type before applying string methods
 df["Débit"] = df["Débit"].astype(str).str.replace(" ", "").str.replace(",", ".").astype(float)
 df["Crédit"] = df["Crédit"].astype(str).str.replace(" ", "").str.replace(",", ".").astype(float)
 # Instead of converting to float, keep "N° facture" as string
@@ -24,7 +24,7 @@ df["N° facture"] = df["N° facture"].astype(str).str.replace(" ", "").str.repla
 
 balance["N° facture"] = balance["N° facture"].astype(str)
 
-# Remplacer les valeurs NaN dans les colonnes "Débit" et "Crédit" par 0
+    # Remplacer les valeurs NaN dans les colonnes "Débit" et "Crédit" par 0
 balance["Débit"] = balance["Débit"].fillna(0)
 balance["Crédit"] = balance["Crédit"].fillna(0)
 balance["N° facture"] = balance["N° facture"].fillna("")
