@@ -11,7 +11,7 @@ uploaded_file = st.file_uploader("Importer Export_Balance (CSV)", type="csv")
 try:
     df = pd.read_csv(uploaded_file, encoding="UTF-16", on_bad_lines='skip')  # Skip bad lines
     # Or you can use 'error' to raise an error on bad lines
-    # df = pd.read_csv(file_path, on_bad_lines='error')
+    # df = pd.read_csv(uploaded_file, on_bad_lines='error')
 except pd.errors.ParserError as e:
     print(f"Error reading CSV: {e}")
     # You can further inspect the error or the problematic line here
