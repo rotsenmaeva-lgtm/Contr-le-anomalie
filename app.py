@@ -39,9 +39,9 @@ if not doublons_facture.empty:
 
 df_anomalies = pd.DataFrame(anomalies)
 
-    total_pieces = len(balance)
-    total_anomalies = len(df_anomalies)
-    taux_anomalie = round((total_anomalies / total_pieces) * 100, 2) if total_pieces > 0 else 0
+total_pieces = len(balance)
+total_anomalies = len(df_anomalies)
+taux_anomalie = round((total_anomalies / total_pieces) * 100, 2) if total_pieces > 0 else 0
 
     # KPIs
     col1, col2, col3 = st.columns(3)
