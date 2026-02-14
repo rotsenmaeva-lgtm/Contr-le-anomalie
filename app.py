@@ -17,7 +17,7 @@ except pd.errors.ParserError as e:
     # You can further inspect the error or the problematic line here
     # For example, print the line number and the line content
     line_number = int(str(e).split("line ")[1].split(",")[0])
-    with open(file_path, 'r', encoding="UTF-16") as f:
+    with open(uploaded_file, 'r', encoding="UTF-16") as f:
         for i, line in enumerate(f):
             if i == line_number - 1:
                 print(f"Problematic line {line_number}: {line}")
