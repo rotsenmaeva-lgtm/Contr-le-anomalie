@@ -44,17 +44,17 @@ total_anomalies = len(df_anomalies)
 taux_anomalie = round((total_anomalies / total_pieces) * 100, 2) if total_pieces > 0 else 0
 
     # KPIs
-    col1, col2, col3 = st.columns(3)
-    col1.metric("📄 Pièces analysées", total_pieces)
-    col2.metric("⚠️ Anomalies détectées", total_anomalies)
-    col3.metric("📊 Taux d'anomalie", f"{taux_anomalie} %")
+col1, col2, col3 = st.columns(3)
+col1.metric("📄 Pièces analysées", total_pieces)
+col2.metric("⚠️ Anomalies détectées", total_anomalies)
+col3.metric("📊 Taux d'anomalie", f"{taux_anomalie} %")
 
-    st.subheader("📋 Liste des anomalies")
-    st.dataframe(df_anomalies)
+st.subheader("📋 Liste des anomalies")
+st.dataframe(df_anomalies)
 
-    st.download_button(
-        "📥 Télécharger les anomalies",
-        df_anomalies.to_csv(index=False).encode("utf-8"),
-        "anomalies_structurées.csv",
-        "text/csv"
+st.download_button(
+    "📥 Télécharger les anomalies",
+    df_anomalies.to_csv(index=False).encode("utf-8"),
+    "anomalies_structurées.csv",
+    "text/csv"
     )
