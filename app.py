@@ -34,7 +34,7 @@ def append_anomaly(anomaly_df, type_anomalie, commentaire):
     # Doublons facture
 doublons_facture = balance[balance.duplicated(subset=["Compte", "N° facture"], keep=False)]
 
-    if not doublons_facture.empty:
+if not doublons_facture.empty:
         append_anomaly(doublons_facture, "Doublon de facture", "Facture en double")
 
     df_anomalies = pd.DataFrame(anomalies)
