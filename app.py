@@ -1,21 +1,23 @@
 import streamlit as st
 import pandas as pd
 import csv
-from io import StringIO, TextIOWrapper
+from io import TextIOWrapper
 
+st.set_page_config(page_title="Contrôle Anomalies", layout="wide")
 st.title("🔍 Contrôle des anomalies fournisseurs")
 
 uploaded_file = st.file_uploader("Importer Export_Balance (CSV)", type="csv")
 
 if uploaded_file:
 
-    # --- Lecture CSV avec détection automatique du séparateur ---
+    # ------------------ Lecture CSV avec détection automatique ------------------
     try:
-        # Pour UTF-16 Excel : il faut TextIOWrapper
+        # Pour UTF-16 Excel, on utilise TextIOWrapper
         wrapper = TextIOWrapper(uploaded_file, encoding="utf-16")
         sample = wrapper.read(1024)
-        wrapper.seek(0)  # Retour au début du fichier
+        wrapper.seek(0)
 
+        # Détecter séparateur automatiquement
         dialect = csv.Sniffer().sniff(sample, delimiters=";,")
         sep_detected = dialect.delimiter
 
@@ -24,32 +26,28 @@ if uploaded_file:
         st.error(f"⚠️ Impossible de lire le fichier CSV : {e}")
         st.stop()
 
-    # --- Normalisation noms de colonnes ---
-    balance.columns = [str(col).strip() for col in balance.columns]
-    balance.columns = [col.replace("\ufeff", "") for col in balance.columns]
-
+    # ------------------ Nettoyage noms de colonnes ------------------
+    balance.columns = [str(col).strip().replace("\ufeff", "") for col in balance.columns]
     st.write("✅ Colonnes détectées :", balance.columns.tolist())
 
-    # --- Nettoyage données ---
+    # ------------------ Vérification colonnes essentielles ------------------
+    if "N° facture" not in balance.columns or "Crédit" not in balance.columns:
+        st.error("⚠️ Colonnes 'N° facture' ou 'Crédit' manquantes !")
+        st.stop()
+
+    # ------------------ Nettoyage et conversion des colonnes ------------------
     for col in ["Débit", "Crédit"]:
         if col in balance.columns:
             balance[col] = balance[col].fillna(0)
             balance[col] = balance[col].astype(str).str.replace(" ", "").str.replace(",", ".").astype(float)
 
-    if "N° facture" in balance.columns:
-        balance["N° facture"] = balance["N° facture"].fillna("").astype(str).str.strip()
+    balance["N° facture"] = balance["N° facture"].fillna("").astype(str).str.strip()
 
-    # Vérifie colonnes essentielles
-    if "N° facture" not in balance.columns or "Crédit" not in balance.columns:
-        st.error("⚠️ Colonnes 'N° facture' ou 'Crédit' manquantes !")
-        st.stop()
-
-    # Nettoyage final
     balance = balance.dropna(subset=["N° facture", "Crédit"], how="all")
     balance = balance[balance["Crédit"] != 0]
     balance = balance[balance["N° facture"].astype(str).str.strip() != ""]
 
-    # --- Détection des anomalies ---
+    # ------------------ Détection anomalies ------------------
     anomalies = []
 
     def append_anomaly(anomaly_df, type_anomalie, commentaire):
@@ -63,28 +61,9 @@ if uploaded_file:
                 "Commentaire": commentaire
             })
 
+    # Doublons facture
     doublons_facture = balance[balance.duplicated(subset=["Compte", "N° facture"], keep=False)]
     if not doublons_facture.empty:
         append_anomaly(doublons_facture, "Doublon de facture", "Facture en double")
 
-    df_anomalies = pd.DataFrame(anomalies)
-
-    # --- KPI ---
-    total_pieces = len(balance)
-    total_anomalies = len(df_anomalies)
-    taux_anomalie = round((total_anomalies / total_pieces) * 100, 2) if total_pieces > 0 else 0
-
-    col1, col2, col3 = st.columns(3)
-    col1.metric("📄 Pièces analysées", total_pieces)
-    col2.metric("⚠️ Anomalies détectées", total_anomalies)
-    col3.metric("📊 Taux d'anomalie", f"{taux_anomalie} %")
-
-    st.subheader("📋 Liste des anomalies")
-    st.dataframe(df_anomalies)
-
-    st.download_button(
-        "📥 Télécharger les anomalies",
-        df_anomalies.to_csv(index=False).encode("utf-8"),
-        "anomalies_structurées.csv",
-        "text/csv"
-    )
+    df_anomalies = pd_
