@@ -37,7 +37,7 @@ doublons_facture = balance[balance.duplicated(subset=["Compte", "N° facture"], 
 if not doublons_facture.empty:
         append_anomaly(doublons_facture, "Doublon de facture", "Facture en double")
 
-    df_anomalies = pd.DataFrame(anomalies)
+df_anomalies = pd.DataFrame(anomalies)
 
     total_pieces = len(balance)
     total_anomalies = len(df_anomalies)
