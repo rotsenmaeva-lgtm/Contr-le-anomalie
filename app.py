@@ -20,8 +20,7 @@ balance = balance[balance["Crédit"] != 0]
 balance = balance[balance["N° facture"].astype(str).str.strip() != ""]
 
 anomalies = []
-
-    def append_anomaly(anomaly_df, type_anomalie, commentaire):
+def append_anomaly(anomaly_df, type_anomalie, commentaire):
         for _, row in anomaly_df.iterrows():
             anomalies.append({
                 "Type d'anomalie": type_anomalie,
